@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Forum</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --primary-color: #0066cc;
+      --admin-bg: #e6ffed;
+      --admin-border: #2da44e;
+      --admin-badge: #2da44e;
+      --border-color: #e1e4e8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .admin-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-btn {
+      background: #f0f0f0;
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .admin-btn.active {
+      background: var(--admin-border);
+      color: white;
+      border-color: var(--admin-border);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      background: #eef2f5;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .tab-btn.recommended {
+      background: #fff8c5;
+      border-color: #d4a72c;
+      color: #735c0f;
+    }
+    .tab-btn.recommended.active {
+      background: #d4a72c;
+      color: white;
+    }
+
+    /* Form */
+    .create-post-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .create-post-card h3 {
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 80px;
+    }
+
+    button.submit-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button.submit-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Posts */
+    .post-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .post-card.admin-post {
+      background-color: var(--admin-bg);
+      border: 2px solid var(--admin-border);
+    }
+
+    .pinned-badge {
+      background: #cf222e;
+      color: white;
+      font-size: 0.75em;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .admin-badge {
+      background: var(--admin-badge);
+      color: white;
+      font-size: 0.75em;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .post-meta {
+      font-size: 0.85em;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .post-title {
+      font-size: 1.25em;
+      margin-bottom: 8px;
+    }
+
+    .post-body {
+      font-size: 1em;
+      line-height: 1.4;
+      margin-bottom: 15px;
+    }
+
+    .post-actions, .reply-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: 0.9em;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: #555;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-btn:hover {
+      color: var(--primary-color);
+    }
+
+    .delete-btn {
+      color: #cf222e;
+    }
+    .delete-btn:hover {
+      color: #a40e26;
+    }
+
+    /* Replies */
+    .replies-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .reply-card {
+      background: #f8f9fa;
+      border-left: 3px solid var(--border-color);
+      padding: 10px 14px;
+      margin-top: 10px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .reply-card.admin-post {
+      background: #f0fff4;
+      border-left-color: var(--admin-border);
+    }
+
+    .reply-form {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .reply-form input, .reply-form textarea {
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Community Forum</h1>
+      <div class="admin-controls">
+        <button id="admin-btn" class="admin-btn" onclick="toggleAdminMode()">🔒 Admin Mode</button>
+      </div>
+    </header>
+
+    <!-- Category Tabs -->
+    <div class="tabs" id="tabs-container"></div>
+
+    <!-- Create Post -->
+    <div class="create-post-card" id="create-post-section">
+      <h3 id="form-heading">Create a Post</h3>
+      <form id="post-form" onsubmit="handleCreatePost(event)">
+        <div class="form-group">
+          <input type="text" id="post-author" placeholder="Your Name" required>
+        </div>
+        <div class="form-group">
+          <input type="text" id="post-title" placeholder="Post Heading" required>
+        </div>
+        <div class="form-group">
+          <textarea id="post-body" placeholder="Write your post here..." required></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Post</button>
+      </form>
+    </div>
+
+    <!-- Posts Display Feed -->
+    <div id="posts-feed"></div>
+  </div>
+
+  <script>
+    const ADMIN_PASSWORD = "F0rYUf0rM33";
+
+    // Categories setup
+    const categories = [
+      "Math & Sciences",
+      "Animals",
+      "Internet Culture",
+      "Art",
+      "Music",
+      "Games",
+      "⭐ Recommended"
+    ];
+
+    let currentCategory = "Math & Sciences";
+    let isAdmin = false;
+
+    // Load posts from localStorage or initialize empty list
+    let posts = JSON.parse(localStorage.getItem('forum_posts')) || [];
+
+    // Initialize UI
+    function init() {
+      renderTabs();
+      renderPosts();
+    }
+
+    function savePosts() {
+      localStorage.setItem('forum_posts', JSON.stringify(posts));
+    }
+
+    function toggleAdminMode() {
+      if (!isAdmin) {
+        const inputPassword = prompt("Enter Admin Password:");
+        if (inputPassword === ADMIN_PASSWORD) {
+          isAdmin = true;
+          alert("Admin Mode Activated!");
+        } else if (inputPassword !== null) {
+          alert("Incorrect Password!");
+          return;
+        }
+      } else {
+        isAdmin = false;
+        alert("Exited Admin Mode.");
+      }
+
+      // Update button styling
+      const adminBtn = document.getElementById('admin-btn');
+      if (isAdmin) {
+        adminBtn.innerText = "🔓 Admin Mode (Active)";
+        adminBtn.classList.add('active');
+      } else {
+        adminBtn.innerText = "🔒 Admin Mode";
+        adminBtn.classList.remove('active');
+      }
+
+      renderPosts();
+    }
+
+    // Render Category Tabs
+    function renderTabs() {
+      const container = document.getElementById('tabs-container');
+      container.innerHTML = '';
+
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${cat === '⭐ Recommended' ? 'recommended' : ''} ${cat === currentCategory ? 'active' : ''}`;
+        btn.innerText = cat;
+        btn.onclick = () => {
+          currentCategory = cat;
+          renderTabs();
+          
+          // Hide post creation box on Recommended tab
+          document.getElementById('create-post-section').style.display = 
+            cat === '⭐ Recommended' ? 'none' : 'block';
+            
+          renderPosts();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    // Create New Post
+    function handleCreatePost(e) {
+      e.preventDefault();
+      const author = document.getElementById('post-author').value;
+      const title = document.getElementById('post-title').value;
+      const body = document.getElementById('post-body').value;
+
+      const newPost = {
+        id: Date.now(),
+        category: currentCategory,
+        author: author,
+        title: title,
+        body: body,
+        likes: 0,
+        isAdmin: isAdmin,
+        pinnedAt: null, // timestamp for 2-day pin tracking
+        createdAt: new Date().toISOString(),
+        replies: []
+      };
+
+      posts.unshift(newPost);
+      savePosts();
+      
+      // Reset Form
+      document.getElementById('post-title').value = '';
+      document.getElementById('post-body').value = '';
+      
+      renderPosts();
+    }
+
+    // Check if pin is still valid (2 days = 172800000 ms)
+    function isPinned(post) {
+      if (!post.pinnedAt) return false;
+      const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+      return (Date.now() - post.pinnedAt) < twoDaysInMs;
+    }
+
+    // Render Posts based on current Tab & Filters
+    function renderPosts() {
+      const feed = document.getElementById('posts-feed');
+      feed.innerHTML = '';
+
+      let filteredPosts = [];
+
+      if (currentCategory === '⭐ Recommended') {
+        // Recommended tab logic:
+        // Posts with > 0 likes OR created by Admins
+        filteredPosts = posts.filter(p => p.likes > 0 || p.isAdmin);
+        // Sort by likes descending, with Admin posts given extra priority weight
+        filteredPosts.sort((a, b) => {
+          const scoreA = a.likes + (a.isAdmin ? 1000 : 0);
+          const scoreB = b.likes + (b.isAdmin ? 1000 : 0);
+          return scoreB - scoreA;
+        });
+      } else {
+        // Regular Category Filtering
+        filteredPosts = posts.filter(p => p.category === currentCategory);
+
+        // Sorting: Valid Pinned posts stay at the top, then newest posts
+        filteredPosts.sort((a, b) => {
+          const aPin = isPinned(a);
+          const bPin = isPinned(b);
+          if (aPin && !bPin) return -1;
+          if (!aPin && bPin) return 1;
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+      }
+
+      if (filteredPosts.length === 0) {
+        feed.innerHTML = '<p style="text-align: center; color: #777; padding: 20px;">No posts yet in this tab.</p>';
+        return;
+      }
+
+      filteredPosts.forEach(post => {
+        const postCard = document.createElement('div');
+        postCard.className = `post-card ${post.isAdmin ? 'admin-post' : ''}`;
+
+        const pinned = isPinned(post);
+
+        postCard.innerHTML = `
+          <div class="post-header">
+            <div>
+              ${pinned ? '<span class="pinned-badge">📌 PINNED</span>' : ''}
+              <strong style="font-size: 1.1em;">${escapeHTML(post.author)}</strong>
+              ${post.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+            </div>
+            <span class="post-meta">${new Date(post.createdAt).toLocaleDateString()}</span>
+          </div>
+
+          <h2 class="post-title">${escapeHTML(post.title)}</h2>
+          <p class="post-body">${escapeHTML(post.body)}</p>
+
+          <div class="post-actions">
+            <button class="action-btn" onclick="likePost(${post.id})">👍 ${post.likes} Likes</button>
+            <button class="action-btn" onclick="toggleReplyForm(${post.id})">💬 Reply</button>
+            
+            ${isAdmin ? `
+              <button class="action-btn" onclick="togglePin(${post.id})">${pinned ? 'Unpin' : '📌 Pin (2 Days)'}</button>
+              <button class="action-btn delete-btn" onclick="deletePost(${post.id})">🗑 Delete</button>
+            ` : ''}
+          </div>
+
+          <!-- Replies Container -->
+          <div class="replies-section">
+            <div id="replies-list-${post.id}">
+              ${post.replies.map(reply => `
+                <div class="reply-card ${reply.isAdmin ? 'admin-post' : ''}">
+                  <div style="font-size: 0.85em; margin-bottom: 4px;">
+                    <strong>${escapeHTML(reply.author)}</strong>
+                    ${reply.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+                  </div>
+                  <p style="font-size: 0.9em; margin-bottom: 6px;">${escapeHTML(reply.body)}</p>
+                  <div class="reply-actions">
+                    <button class="action-btn" style="font-size:0.8em;" onclick="likeReply(${post.id}, ${reply.id})">👍 ${reply.likes}</button>
+                    ${isAdmin ? `<button class="action-btn delete-btn" style="font-size:0.8em;" onclick="deleteReply(${post.id}, ${reply.id})">Delete</button>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Add Reply Form -->
+            <form id="reply-form-${post.id}" class="reply-form" style="display:none;" onsubmit="handleCreateReply(event, ${post.id})">
+              <input type="text" id="reply-author-${post.id}" placeholder="Your Name" required>
+              <textarea id="reply-body-${post.id}" placeholder="Write a reply..." required></textarea>
+              <button type="submit" class="submit-btn" style="padding: 6px 12px; font-size: 0.85em;">Submit Reply</button>
+            </form>
+          </div>
+        `;
+
+        feed.appendChild(postCard);
+      });
+    }
+
+    // Actions
+    function likePost(postId) {
+      const post = posts.find(p => p.id === postId);
+      if (post) {
+        post.likes += 1;
+        savePosts();
+        renderPosts();
+      }
+    }
+
+    function togglePin(postId) {
+      const post = posts.find(p => p.id === postId);
+      if (post) {
+        post.pinnedAt = isPinned(post) ? null : Date.now();
+        savePosts();
+        renderPosts();
+      }
+    }
+
+    function deletePost(postId) {
+      if (confirm("Are you sure you want to delete this post?")) {
+        posts = posts.filter(p => p.id !== postId);
+        savePosts();
+        renderPosts();
+      }
+    }
+
+    function toggleReplyForm(postId) {
+      const form = document.getElementById(`reply-form-${postId}`);
+      form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function handleCreateReply(e, postId) {
+      e.preventDefault();
+      const author = document.getElementById(`reply-author-${postId}`).value;
+      const body = document.getElementById(`reply-body-${postId}`).value;
+
+      const post = posts.find(p => p.id === postId);
+      if (post) {
+        post.replies.push({
+          id: Date.now(),
+          author: author,
+          body: body,
+          likes: 0,
+          isAdmin: isAdmin
+        });
+        savePosts();
+        renderPosts();
+      }
+    }
+
+    function likeReply(postId, replyId) {
+      const post = posts.find(p => p.id === postId);
+      if (post) {
+        const reply = post.replies.find(r => r.id === replyId);
+        if (reply) {
+          reply.likes += 1;
+          savePosts();
+          renderPosts();
+        }
+      }
+    }
+
+    function deleteReply(postId, replyId) {
+      const post = posts.find(p => p.id === postId);
+      if (post) {
+        post.replies = post.replies.filter(r => r.id !== replyId);
+        savePosts();
+        renderPosts();
+      }
+    }
+
+    // Prevent XSS vulnerabilities
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+
+    // Start App
+    init();
+  </script>
+</body>
+</html>
